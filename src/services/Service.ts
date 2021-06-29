@@ -11,10 +11,10 @@ export class Service {
 
 	constructor() {
 
-		console.log = (str: unknown) => {if (process.send) process.send({op: "log", msg: str});};
-		console.debug = (str: unknown) => {if (process.send) process.send({op: "debug", msg: str});};
-		console.error = (str: unknown) => {if (process.send) process.send({op: "error", msg: str});};
-		console.warn = (str: unknown) => {if (process.send) process.send({op: "warn", msg: str});};
+		console.log = (...str: []) => {if (process.send) process.send({op: "log", msg: str.map(str => typeof str === 'string' ? str : inspect(str)).join(' ')});};
+		console.debug = (...str: []) => {if (process.send) process.send({op: "debug", msg: str.map(str => typeof str === 'string' ? str : inspect(str)).join(' ')});};
+		console.error = (...str: []) => {if (process.send) process.send({op: "error", msg: str.map(str => typeof str === 'string' ? str : inspect(str)).join(' ')});};
+		console.warn = (...str: []) => {if (process.send) process.send({op: "warn", msg: str.map(str => typeof str === 'string' ? str : inspect(str)).join(' ')});};
 
 		// Spawns
 		process.on("uncaughtException", (err: Error) => {
