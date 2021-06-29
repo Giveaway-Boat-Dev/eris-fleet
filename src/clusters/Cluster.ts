@@ -183,7 +183,7 @@ export class Cluster {
 
 		const options = Object.assign(this.clientOptions, {autoreconnect: true, firstShardID: this.firstShardID, lastShardID: this.lastShardID, maxShards: this.shardCount});
 
-		let App = (await import(this.path));
+		let { App } = (await import(this.path));
 
 		let bot;
 		if (App.Eris) {
