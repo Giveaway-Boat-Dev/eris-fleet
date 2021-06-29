@@ -1,7 +1,6 @@
 {
   "name": "eris-fleet",
   "version": "0.3.7",
-  "dependencies": {},
   "description": "Cluster management for Discord bots using the Eris library. Inspired by eris-sharder and @brussell98/megane.",
   "main": "dist/index.js",
   "repository": "https://github.com/danclay/eris-fleet",
@@ -12,7 +11,7 @@
     "@typescript-eslint/eslint-plugin": "^4.13.0",
     "@typescript-eslint/parser": "^4.13.0",
     "dotenv": "^10.0.0",
-    "eris": "^0.15.0",
+    "eris": "^0.15.1",
     "eslint": "^7.17.0",
     "typedoc": "^0.21.0",
     "typescript": "^4.1.3"
