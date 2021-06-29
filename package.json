@@ -20,7 +20,8 @@
     "test": "node test/CI/index.js",
     "prepublishOnly": "yarn build && yarn typedoc",
     "build": "tsc",
-    "dev": "yarn build && node test/dev/index.js"
+    "dev": "yarn build && node test/dev/index.js",
+    "prepare": "tsc"
   },
   "keywords": [
     "discord",
