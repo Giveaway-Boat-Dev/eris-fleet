@@ -179,7 +179,11 @@ export class Cluster {
 	}
 
 	private async connect() {
-		if (this.whatToLog.includes("cluster_start")) console.log(`Connecting with ${this.shards} shard(s)`);
+		if (this.whatToLog.includes("cluster_start")) {
+			console.log('--------------------------------------------------------');
+			console.log(`Connecting with ${this.shards} shard(s)`);
+			console.log('--------------------------------------------------------');
+		}
 
 		const options = Object.assign(this.clientOptions, {autoreconnect: true, firstShardID: this.firstShardID, lastShardID: this.lastShardID, maxShards: this.shardCount});
 
@@ -213,7 +217,10 @@ export class Cluster {
 		};
 
 		bot.on("connect", (id: number) => {
-			if (this.whatToLog.includes("shard_connect")) console.log(`Shard ${id} connected!`);
+			if (this.whatToLog.includes("shard_connect")) {
+                console.log('--------------------------------------------------------');
+                console.log(`[Shards]\tLaunched Shard ${id}`);
+			}
 		});
 
 		bot.on("shardDisconnect", (err: Error, id: number) => {
@@ -241,7 +248,10 @@ export class Cluster {
 		});
 
 		bot.on("ready", () => {
-			if (this.whatToLog.includes("cluster_ready")) console.log(`Shards ${this.firstShardID} - ${this.lastShardID} are ready!`);
+			if (this.whatToLog.includes("cluster_ready")) {
+                console.log('--------------------------------------------------------');
+				console.log(`Shards ${this.firstShardID} - ${this.lastShardID} are ready!`);
+			}
 		});
 
 		bot.once("ready", () => {
