@@ -187,7 +187,7 @@ export class Cluster {
 
 		const options = Object.assign(this.clientOptions, {autoreconnect: true, firstShardID: this.firstShardID, lastShardID: this.lastShardID, maxShards: this.shardCount});
 
-		let { App, loadCommandsAndEvents } = (await import(this.path));
+		let { App, loadCommandsAndEvents, updateShardStatus } = (await import(this.path));
 
 		let bot;
 		if (App.Eris) {
@@ -225,6 +225,8 @@ export class Cluster {
 
 		bot.on("shardDisconnect", (err: Error, id: number) => {
 			if (!this.shutdown) if (this.whatToLog.includes("shard_disconnect")) console.log(`Shard ${id} disconnected with error: ${inspect(err)}`);
+
+			updateShardStatus(id, 'disconnect');
 		});
 
 		bot.once("shardReady", () => {
@@ -233,10 +235,14 @@ export class Cluster {
 
 		bot.on("shardReady", (id: number) => {
 			if (this.whatToLog.includes("shard_ready")) console.log(`Shard ${id} is ready!`);
+
+			updateShardStatus(id, 'ready');
 		});
 
 		bot.on("shardResume", (id: number) => {
 			if (this.whatToLog.includes("shard_resume")) console.log(`Shard ${id} has resumed!`);
+
+			updateShardStatus(id, 'resume');
 		});
 
 		bot.on("warn", (message: string, id: number) => {
