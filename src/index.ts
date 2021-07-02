@@ -7,3 +7,4 @@ export {Setup as BaseClusterWorkerSetup} from "./clusters/BaseClusterWorker";
 /** @internal */
 export {Setup as BaseServiceWorkerSetup} from "./services/BaseServiceWorker";
 export {Options, Stats, ClusterStats, ShardStats, ServiceStats} from "./sharding/Admiral";
+export {IPC} from "./util/IPC";
