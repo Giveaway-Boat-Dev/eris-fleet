@@ -2,42 +2,8 @@ import {EventEmitter} from "events";
 import * as Admiral from "../sharding/Admiral";
 
 export class IPC extends EventEmitter {
-	private events: Map<string | number, Array<(msg: unknown) => void>>;
-
 	public constructor() {
 		super();
-		this.events = new Map();
-
-		process.on("message", msg => {
-			const event = this.events.get(msg.op);
-			if (event) {
-				event.forEach(fn => {
-					fn(msg);
-				});
-			}
-		});
-	}
-
-	/** 
-	 * Register for an event. This will recieve broadcasts and messages sent to this cluster
-	 * @param event Name of the event
-	 * @param callback Function run when event is recieved
-	*/
-	public register(event: string, callback: (msg: unknown) => void): void {
-		const existingEvent = this.events.get(event);
-		if (existingEvent) {
-			this.events.set(event, existingEvent.concat([callback]));
-		} else {
-			this.events.set(event, [callback]);
-		}
-	}
-
-	/** 
-	 * Unregisters an event
-	 * @param event Name of the event
-	*/
-	public unregister(event:string): void {
-		this.events.delete(event);
 	}
 
 	/**
