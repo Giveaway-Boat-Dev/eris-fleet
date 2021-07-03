@@ -2,7 +2,7 @@ import * as Eris from "eris";
 import {worker} from "cluster";
 import {BaseClusterWorker} from "./BaseClusterWorker";
 import {inspect} from "util";
-import * as Admiral from "../sharding/Admiral";
+import { ShardStats, StartingStatus } from "../sharding/Admiral";
 import { IPC } from "../util/IPC";
 
 const ipc = new IPC();
@@ -22,7 +22,7 @@ export class Cluster {
 	app?: BaseClusterWorker;
 	App!: any;
 	shutdown?: boolean;
-	private startingStatus?: Admiral.StartingStatus;
+	private startingStatus?: StartingStatus;
 
 	constructor() {
 		console.log = (...str: []) => {if (process.send) process.send({op: "log", msg: str.map(str => typeof str === 'string' ? str : inspect(str)).join(' '), source: "Cluster " + this.clusterID});};
@@ -120,7 +120,7 @@ export class Cluster {
 				}
 				case "collectStats": {
 					if (!this.bot) return;
-					const shardStats: { id: number; ready: boolean; latency: number; status: string; guilds: number; users: number;}[] = [];
+					const shardStats: ShardStats[] = [];
 					const getShardUsers = (id: number) => {
 						let users = 0;
 						for(const [key, value] of Object.entries(this.bot.guildShardMap)) {
@@ -130,12 +130,15 @@ export class Cluster {
 						return users;
 					};
 					this.bot.shards.forEach(shard => {
+						const guildsInThisShard = this.bot.guilds.filter((guild) => guild.shard.id === shard.id);
+
 						shardStats.push({
 							id: shard.id,
 							ready: shard.ready,
 							latency: shard.latency,
 							status: shard.status,
-							guilds: Object.values(this.bot.guildShardMap).filter(e => e == shard.id).length,
+							guilds: guildsInThisShard.length,
+							unavailableGuilds: guildsInThisShard.filter((guild) => guild.unavailable === true).length,
 							users: getShardUsers(shard.id)
 						});
 					});

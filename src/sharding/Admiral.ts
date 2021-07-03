@@ -73,8 +73,9 @@ export interface ShardStats {
 	latency: number;
 	id: number;
 	ready: boolean;
-	status: "disconnected" | "connecting" | "handshaking" | "ready";
+	status: "disconnected" | "connecting" | "handshaking" | "ready" | "resuming";
 	guilds: number;
+	unavailableGuilds: number;
 	users: number;
 }
 
