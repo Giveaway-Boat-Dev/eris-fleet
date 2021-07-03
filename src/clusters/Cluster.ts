@@ -195,24 +195,25 @@ export class Cluster {
 
 		const options = Object.assign(this.clientOptions, {autoreconnect: true, firstShardID: this.firstShardID, lastShardID: this.lastShardID, maxShards: this.shardCount});
 
-		let { App, loadCommandsAndEvents, updateShardStatus } = (await import(this.path));
+		const botFile = (await import(this.path));
 
 		let bot;
-		if (App.Eris) {
-			bot = new App.Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc });
-			App = App.BotWorker;
+		if (botFile.App.Eris) {
+			bot = new botFile.App.Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc });
+			botFile.App = botFile.App.BotWorker;
 		} else {
 			bot = new Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc });
-			if (App.BotWorker) {
-				App = App.BotWorker;
+			if (botFile.App.BotWorker) {
+				botFile.App = botFile.App.BotWorker;
 			} else {
-				App = App.default ? App.default : App;
+				botFile.App = botFile.App.default ? botFile.App.default : botFile.App;
 			}
 		}
 
-		loadCommandsAndEvents(bot);
+		botFile.loadCommandsAndEvents(bot);
 
 		this.bot = bot;
+		botFile.client = bot;
 
 		const setStatus = () => {
 			if (this.startingStatus) {
@@ -234,7 +235,7 @@ export class Cluster {
 		bot.on("shardDisconnect", (err: Error, id: number) => {
 			if (!this.shutdown) if (this.whatToLog.includes("shard_disconnect")) console.log(`Shard ${id} disconnected with error: ${inspect(err)}`);
 
-			updateShardStatus(id, 'disconnect');
+			botFile.updateShardStatus(id);
 		});
 
 		bot.once("shardReady", () => {
@@ -244,13 +245,13 @@ export class Cluster {
 		bot.on("shardReady", (id: number) => {
 			if (this.whatToLog.includes("shard_ready")) console.log(`Shard ${id} is ready!`);
 
-			updateShardStatus(id, 'ready');
+			botFile.updateShardStatus(id);
 		});
 
 		bot.on("shardResume", (id: number) => {
 			if (this.whatToLog.includes("shard_resume")) console.log(`Shard ${id} has resumed!`);
 
-			updateShardStatus(id, 'resume');
+			botFile.updateShardStatus(id);
 		});
 
 		bot.on("warn", (message: string, id: number) => {
@@ -269,7 +270,7 @@ export class Cluster {
 		});
 
 		bot.once("ready", () => {
-			this.App = App;
+			this.App = botFile.App;
 			if (process.send) process.send({op: "connected"});
 		});
 
