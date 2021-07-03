@@ -485,9 +485,9 @@ Stats are given in the following object format:
 {
     guilds: Number, // # of guilds the bot is in
     users: Number, // # of users the bot has cached
-    clustersRam: Number, // Total RAM used by all clusters in MB
-    servicesRam: Number, // Total RAM used by all services in MB
-    masterRam: Number, // Total RAM used by the master process in MB
+    clustersRam: Number, // Total RAM used by all clusters in MiB
+    servicesRam: Number, // Total RAM used by all services in MiB
+    masterRam: Number, // Total RAM used by the master process in MiB
     totalRam: Number, // The real total rss.
     voice: Number, // # of voice connection the bot is in
     largeGuilds: Number, // # of "large" guilds the bot is in

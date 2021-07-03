@@ -146,7 +146,7 @@ export class Cluster {
 						voice: this.bot.voiceConnections.size,
 						largeGuilds: this.bot.guilds.filter(g => g.large).length,
 						shardStats: shardStats,
-						ram: process.memoryUsage().rss / 1e6
+						ram: process.memoryUsage().rss / 1024 / 1024
 					}});
 
 					break;

@@ -649,7 +649,7 @@ export class Admiral extends EventEmitter {
 							this.prelimStats.totalRam += message.stats.ram;
 						}
 						if (this.statsWorkersCounted === this.clusters.size + this.services.size) {
-								this.prelimStats!.masterRam = process.memoryUsage().rss / 1e6;
+								this.prelimStats!.masterRam = process.memoryUsage().rss / 1024 / 1024;
 								this.prelimStats!.totalRam += this.prelimStats!.masterRam;
 								const compare = (a: ClusterStats, b: ClusterStats) => {
 									if (a.id < b.id) return -1;

@@ -87,7 +87,7 @@ export class Service {
 				}
 				case "collectStats": {
 					if (process.send) process.send({op: "collectStats", stats: {
-						ram: process.memoryUsage().rss / 1e6
+						ram: process.memoryUsage().rss / 1024 / 1024
 					}});
 
 					break;
