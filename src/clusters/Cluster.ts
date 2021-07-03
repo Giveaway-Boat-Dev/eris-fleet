@@ -176,6 +176,11 @@ export class Cluster {
 
 					break;
 				}
+				case "apiResponse": {
+					ipc.emit(message.UUID, message.data);
+
+					break;
+				}
 				}
 			}
 		});

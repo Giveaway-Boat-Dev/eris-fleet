@@ -1,4 +1,5 @@
 import {EventEmitter} from "events";
+import {nanoid} from "nanoid";
 import * as Admiral from "../sharding/Admiral";
 
 export class IPC extends EventEmitter {
@@ -234,4 +235,36 @@ export class IPC extends EventEmitter {
 	public reshard(): void {
 		if (process.send) process.send({op: "reshard"});
 	}
+
+    /**
+     * Make an API request
+     * @arg {String} method Uppercase HTTP method
+     * @arg {String} url URL of the endpoint
+     * @arg {Boolean} [auth] Whether to add the Authorization header and token or not
+     * @arg {Object} [body] Request payload
+     * @arg {Object} [file] File object
+     * @arg {Buffer} file.file A buffer containing file data
+     * @arg {String} file.name What to name the file
+	 * @arg {String} _route What route to send request to
+	 * @arg {Boolean} short Idk what this does
+	 * @arg {Number} workerID Worker ID
+     * @returns {Promise<Object>} Resolves with the returned JSON data
+    */
+	public async requestAPI(method: string, url: string, auth: boolean, body: any, file: any, _route: string, short: boolean, workerID: number): Promise<unknown> {
+		const UUID = nanoid(32);
+		if (process.send) process.send({ op: "apiRequest", UUID, workerID, data: { method, url, auth, body, file, _route, short } });
+
+		return new Promise((resolve, reject) => {
+			const callback = (r: any) => {
+				this.removeListener(UUID, callback);
+
+				if (r.success === true) resolve(r.response);
+				else reject (r.response);
+			};
+	
+			this.on(UUID, callback);
+	    });
+	}
+
+	
 }

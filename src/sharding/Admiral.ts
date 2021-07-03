@@ -8,6 +8,7 @@ import * as Eris from "eris";
 import {Cluster} from "../clusters/Cluster";
 import {Service} from "../services/Service";
 import * as path from "path";
+import {RequestHandler} from "../util/rest/RequestHandler";
 
 interface ServiceCreator {
 	name: string;
@@ -182,6 +183,7 @@ export class Admiral extends EventEmitter {
 		checked: number;
 	}>;
 	private fetchTimeout: number;
+	public requestHandler: RequestHandler
 
 	/** 
 	 * Creates the sharding manager
@@ -207,6 +209,8 @@ export class Admiral extends EventEmitter {
 		this.fetchTimeout = options.fetchTimeout || 10e3;
 		this.resharding = false;
 		this.statsStarted = false;
+		this.requestHandler = new RequestHandler({ ...this.clientOptions.rest, token: this.token });
+
 		if (options.startingStatus) this.startingStatus = options.startingStatus;
 		// Deals with needed components
 		if (!options.token) throw "No token!";
@@ -813,6 +817,22 @@ export class Admiral extends EventEmitter {
 					}
 					case "admiralBroadcast": {
 						this.emit(message.event.op, message.event.msg);
+
+						break;
+					}
+					case "apiRequest": {
+						const { UUID, workerID, data } = message;
+						const { method, url, auth, body, file, _route, short } = data;
+						
+						const worker = master.workers[workerID];
+
+						const send = (data: { response: any, success: boolean }) => {
+							if (worker) worker.send({ op: "apiResponse", UUID, data })
+						}
+
+						this.requestHandler.request(method, url, auth, body, file, _route, short)
+							.then(response => send({ response, success: true }))
+							.catch(response => send({ response, success: false }))
 
 						break;
 					}
