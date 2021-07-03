@@ -982,7 +982,7 @@ export class Admiral extends EventEmitter {
 			});
 		} else if (master.isWorker) {
 			if (process.env.type === "cluster") {
-				new Cluster();
+				new Cluster(this.shardCount === 'auto' ? 0 : this.shardCount);
 			} else if (process.env.type === "service") {
 				new Service();
 			}

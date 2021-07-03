@@ -22,9 +22,10 @@ export class Cluster {
 	app?: BaseClusterWorker;
 	App!: any;
 	shutdown?: boolean;
+	totalShardCount: number;
 	private startingStatus?: StartingStatus;
 
-	constructor() {
+	constructor(totalShardCount: number) {
 		console.log = (...str: []) => {if (process.send) process.send({op: "log", msg: str.map(str => typeof str === 'string' ? str : inspect(str)).join(' '), source: "Cluster " + this.clusterID});};
 		console.debug = (...str: []) => {if (process.send) process.send({op: "debug", msg: str.map(str => typeof str === 'string' ? str : inspect(str)).join(' '), source: "Cluster " + this.clusterID});};
 		console.error = (...str: []) => {if (process.send) process.send({op: "error", msg: str.map(str => typeof str === 'string' ? str : inspect(str)).join(' '), source: "Cluster " + this.clusterID});};
@@ -187,6 +188,8 @@ export class Cluster {
 				}
 			}
 		});
+
+		this.totalShardCount = totalShardCount;
 	}
 
 	private async connect() {
@@ -202,10 +205,10 @@ export class Cluster {
 
 		let bot;
 		if (botFile.App.Eris) {
-			bot = new botFile.App.Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc });
+			bot = new botFile.App.Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc, totalShardCount: this.totalShardCount });
 			botFile.App = botFile.App.BotWorker;
 		} else {
-			bot = new Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc });
+			bot = new Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc, totalShardCount: this.totalShardCount });
 			if (botFile.App.BotWorker) {
 				botFile.App = botFile.App.BotWorker;
 			} else {
