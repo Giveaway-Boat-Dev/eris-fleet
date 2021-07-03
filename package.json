@@ -6,15 +6,17 @@
   "repository": "https://github.com/danclay/eris-fleet",
   "author": "danclay",
   "license": "MIT",
-  "devDependencies": {
+  "dependencies": {
     "@types/node": "^14.17.4",
     "@types/ws": "^7.4.6",
-    "@typescript-eslint/eslint-plugin": "^4.13.0",
-    "@typescript-eslint/parser": "^4.13.0",
     "dotenv": "^10.0.0",
     "eris": "github:Giveaway-Boat-Dev/eris#dev",
+    "nanoid": "^3.1.23"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.13.0",
+    "@typescript-eslint/parser": "^4.13.0",
     "eslint": "^7.17.0",
-    "nanoid": "^3.1.23",
     "typedoc": "^0.21.0",
     "typescript": "^4.1.3"
   },
@@ -33,8 +35,5 @@
     "eris",
     "eris sharder",
     "discord sharder"
-  ],
-  "peerDependencies": {
-    "eris": "^0.15.0"
-  }
+  ]
 }
