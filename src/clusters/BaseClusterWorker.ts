@@ -5,6 +5,7 @@ export interface Setup {
 	bot: Client;
 	clusterID: number;
 	workerID: number;
+	ipc: IPC;
 }
 
 export class BaseClusterWorker {
@@ -26,6 +27,6 @@ export class BaseClusterWorker {
 		this.bot = setup.bot;
 		this.clusterID = setup.clusterID;
 		this.workerID = setup.workerID;
-		this.ipc = new IPC();
+		this.ipc = setup.ipc;
 	}
 }

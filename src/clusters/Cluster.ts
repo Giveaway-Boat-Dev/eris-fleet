@@ -3,6 +3,9 @@ import {worker} from "cluster";
 import {BaseClusterWorker} from "./BaseClusterWorker";
 import {inspect} from "util";
 import * as Admiral from "../sharding/Admiral";
+import { IPC } from "../util/IPC";
+
+const ipc = new IPC();
 
 export class Cluster {
 	firstShardID!: number;
@@ -191,10 +194,10 @@ export class Cluster {
 
 		let bot;
 		if (App.Eris) {
-			bot = new App.Eris.Client(this.token, options);
+			bot = new App.Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc });
 			App = App.BotWorker;
 		} else {
-			bot = new Eris.Client(this.token, options);
+			bot = new Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc });
 			if (App.BotWorker) {
 				App = App.BotWorker;
 			} else {
@@ -273,6 +276,6 @@ export class Cluster {
 	private async loadCode() {
 		//let App = (await import(this.path)).default;
 		//App = App.default ? App.default : App;
-		this.app = new this.App({bot: this.bot, clusterID: this.clusterID, workerID: worker.id});
+		this.app = new this.App({bot: this.bot, clusterID: this.clusterID, workerID: worker.id, ipc});
 	}
 }
