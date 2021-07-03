@@ -505,7 +505,6 @@ export class Admiral extends EventEmitter {
 							}
 						} else {
 							this.queue.execute();
-							this.emit("ready");
 							// After all clusters and services are ready
 							if (this.stats && this.pauseStats) {
 								if (!this.resharding) {
@@ -514,6 +513,7 @@ export class Admiral extends EventEmitter {
 									this.pauseStats = false;
 								}
 							}
+							this.emit("ready");
 						}
 						break;
 					}
