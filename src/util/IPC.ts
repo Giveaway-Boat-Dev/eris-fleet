@@ -18,6 +18,26 @@ export class IPC extends EventEmitter {
 	}
 
 	/**
+	 * Broadcast a code to be evaluated in all clusters
+	 * @param code Code to eval in all clusters
+	 * @param workerID Worker ID
+	 */
+	public broadcastEval(code: string, workerID: string) {
+		const UUID = nanoid(32);
+		if (process.send) process.send({ op: "broadcastEval", UUID, workerID, code });
+
+		return new Promise((resolve, reject) => {
+			const callback = (r: any) => {
+				this.removeListener(UUID, callback);
+
+				resolve(r);
+			};
+
+			this.on(UUID, callback);
+		});
+	}
+
+	/**
 	 * Broadcast to the master process
 	 * @param op Name of the event
 	 * @param message Message to send

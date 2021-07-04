@@ -185,6 +185,20 @@ export class Cluster {
 
 					break;
 				}
+				case "broadcastEval": {
+					const { UUID, code } = message;
+
+					const evaled = eval(code);
+
+					if (process.send) process.send({ op: "broadcastEvalReturn", UUID, value: evaled, clusterID: this.clusterID });
+
+					break;
+				}
+				case "broadcastEvalReturn": {
+					ipc.emit(message.UUID, Object.values(message.value));
+
+					break;
+				}
 				}
 			}
 		});

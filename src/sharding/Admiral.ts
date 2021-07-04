@@ -184,6 +184,11 @@ export class Admiral extends EventEmitter {
 		checked: number;
 	}>;
 	private fetchTimeout: number;
+	private evals: Map<String, {
+		UUID: string;
+		destWorkerID: number;
+		value: Record<number, any>;
+	}>;
 	public requestHandler: RequestHandler
 
 	/** 
@@ -292,6 +297,7 @@ export class Admiral extends EventEmitter {
 		this.queue = new Queue();
 		this.softKills = new Map();
 		this.fetches = new Map();
+		this.evals = new Map();
 		this.launchingManager = new Map();
 
 		if (this.statsInterval !== "disable") {
@@ -834,6 +840,40 @@ export class Admiral extends EventEmitter {
 						this.requestHandler.request(method, url, auth, body, file, _route, short)
 							.then(response => send({ response, success: true }))
 							.catch(response => send({ response, success: false }))
+
+						break;
+					}
+					case "broadcastEval": {
+						const { UUID, workerID, code } = message;
+
+						this.evals.set(UUID, { UUID, destWorkerID: workerID, value: {} });
+
+						for (let i = 0; i < this.clusters.size; i++) {
+							const cluster = this.clusters.get(i);
+							const worker = master.workers[cluster.workerID];
+							if (worker) worker.send({ op: "broadcastEval", UUID, code });
+						}
+
+						break;
+					}
+					case "broadcastEvalReturn": {
+						const { UUID, value, clusterID } = message;
+						const evals = this.evals.get(UUID);
+
+						if (evals !== undefined) {
+							evals.value[clusterID] = value;
+
+							if (Object.keys(evals.value).length === this.clusters.size) {
+								const worker = master.workers[evals.destWorkerID];
+								if (worker) {
+									worker.send({ op: "broadcastEvalReturn", UUID, value: evals.value });
+
+									this.evals.delete(UUID);
+								}
+							} else {
+								this.evals.set(UUID, evals);
+							}
+						}
 
 						break;
 					}
