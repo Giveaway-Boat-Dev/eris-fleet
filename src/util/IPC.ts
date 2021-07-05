@@ -22,7 +22,7 @@ export class IPC extends EventEmitter {
 	 * @param code Code to eval in all clusters
 	 * @param workerID Worker ID
 	 */
-	public broadcastEval(code: string, workerID: string) {
+	public broadcastEval(code: string, workerID: number) {
 		const UUID = nanoid(32);
 		if (process.send) process.send({ op: "broadcastEval", UUID, workerID, code });
 
