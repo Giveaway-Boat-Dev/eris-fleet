@@ -10,7 +10,7 @@
     "@types/node": "^14.17.4",
     "@types/ws": "^7.4.6",
     "dotenv": "^10.0.0",
-    "eris": "github:Giveaway-Boat-Dev/eris#dev",
+    "eris": "github:Giveaway-Boat/eris#dev",
     "nanoid": "^3.1.23"
   },
   "devDependencies": {
