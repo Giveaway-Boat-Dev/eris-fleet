@@ -1,3 +1,4 @@
+import {Cluster} from "../clusters/Cluster";
 import {EventEmitter} from "events";
 import {nanoid} from "nanoid";
 import * as Admiral from "../sharding/Admiral";
