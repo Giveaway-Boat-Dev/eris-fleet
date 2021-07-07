@@ -17,7 +17,7 @@ export class Cluster {
 	shards!: number;
 	clientOptions!: Eris.ClientOptions;
 	whatToLog!: string[];
-	bot!: Eris.Client;
+	client!: Eris.Client;
 	private token!: string;
 	app?: BaseClusterWorker;
 	App!: any;
@@ -64,8 +64,8 @@ export class Cluster {
 					break;
 				}
 				case "fetchUser": {
-					if (!this.bot) return;
-					const user = this.bot.users.get(message.id);
+					if (!this.client) return;
+					const user = this.client.users.get(message.id);
 					if (user) {
 						if (process.send) process.send({op: "return", value: user, UUID: message.UUID});
 					} else {
@@ -75,8 +75,8 @@ export class Cluster {
 					break;
 				}
 				case "fetchChannel": {
-					if (!this.bot) return;
-					const channel = this.bot.getChannel(message.id);
+					if (!this.client) return;
+					const channel = this.client.getChannel(message.id);
 					if (channel) {
 						if (process.send) process.send({op: "return", value: channel, UUID: message.UUID});
 					} else {
@@ -86,8 +86,8 @@ export class Cluster {
 					break;
 				}
 				case "fetchGuild": {
-					if (!this.bot) return;
-					const guild = this.bot.guilds.get(message.id);
+					if (!this.client) return;
+					const guild = this.client.guilds.get(message.id);
 					if (guild) {
 						if (process.send) process.send({op: "return", value: guild, UUID: message.UUID});
 					} else {
@@ -97,9 +97,9 @@ export class Cluster {
 					break;
 				}
 				case "fetchMember": {
-					if (!this.bot) return;
+					if (!this.client) return;
 					const messageParsed = JSON.parse(message.id);
-					const guild = this.bot.guilds.get(messageParsed.guildID);
+					const guild = this.client.guilds.get(messageParsed.guildID);
 					if (guild) {
 						const member = (await guild.fetchMembers({userIDs: [messageParsed.memberID], presences: true}))[0];
 						if (member) {
@@ -120,18 +120,18 @@ export class Cluster {
 					break;
 				}
 				case "collectStats": {
-					if (!this.bot) return;
+					if (!this.client) return;
 					const shardStats: ShardStats[] = [];
 					const getShardUsers = (id: number) => {
 						let users = 0;
-						for(const [key, value] of Object.entries(this.bot.guildShardMap)) {
-							const guild = this.bot.guilds.get(key);
+						for(const [key, value] of Object.entries(this.client.guildShardMap)) {
+							const guild = this.client.guilds.get(key);
 							if (Number(value) == id && guild) users += guild.memberCount;
 						}
 						return users;
 					};
-					this.bot.shards.forEach(shard => {
-						const guildsInThisShard = this.bot.guilds.filter((guild) => guild.shard.id === shard.id);
+					this.client.shards.forEach(shard => {
+						const guildsInThisShard = this.client.guilds.filter((guild) => guild.shard.id === shard.id);
 
 						shardStats.push({
 							id: shard.id,
@@ -144,11 +144,11 @@ export class Cluster {
 						});
 					});
 					if (process.send) process.send({op: "collectStats", stats: {
-						guilds: this.bot.guilds.size,
-						users: this.bot.users.size,
-						uptime: this.bot.uptime,
-						voice: this.bot.voiceConnections.size,
-						largeGuilds: this.bot.guilds.filter(g => g.large).length,
+						guilds: this.client.guilds.size,
+						users: this.client.users.size,
+						uptime: this.client.uptime,
+						voice: this.client.voiceConnections.size,
+						largeGuilds: this.client.guilds.filter(g => g.large).length,
 						shardStats: shardStats,
 						ram: process.memoryUsage().rss / 1024 / 1024
 					}});
@@ -161,15 +161,15 @@ export class Cluster {
 						if (this.app.shutdown) {
 							// Ask app to shutdown
 							this.app.shutdown(() => {
-								this.bot.disconnect({reconnect: false});
+								this.client.disconnect({reconnect: false});
 								if (process.send) process.send({op: "shutdown"});
 							});
 						} else {
-							this.bot.disconnect({reconnect: false});
+							this.client.disconnect({reconnect: false});
 							if (process.send) process.send({op: "shutdown"});
 						}
 					} else {
-						this.bot.disconnect({reconnect: false});
+						this.client.disconnect({reconnect: false});
 						if (process.send) process.send({op: "shutdown"});
 					}
 
@@ -232,15 +232,15 @@ export class Cluster {
 
 		botFile.loadCommandsAndEvents(bot);
 
-		this.bot = bot;
+		this.client = bot;
 		botFile.client = bot;
 
 		const setStatus = () => {
 			if (this.startingStatus) {
 				if (this.startingStatus.game) {
-					this.bot.editStatus(this.startingStatus.status, this.startingStatus.game);
+					this.client.editStatus(this.startingStatus.status, this.startingStatus.game);
 				} else {
-					this.bot.editStatus(this.startingStatus.status);
+					this.client.editStatus(this.startingStatus.status);
 				}
 			}
 		};
@@ -302,6 +302,6 @@ export class Cluster {
 	private async loadCode() {
 		//let App = (await import(this.path)).default;
 		//App = App.default ? App.default : App;
-		this.app = new this.App({bot: this.bot, clusterID: this.clusterID, workerID: worker.id, ipc});
+		this.app = new this.App({bot: this.client, clusterID: this.clusterID, workerID: worker.id, ipc});
 	}
 }
