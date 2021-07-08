@@ -145,7 +145,7 @@ export class Cluster {
 					});
 					if (process.send) process.send({op: "collectStats", stats: {
 						guilds: this.client.guilds.size,
-						users: this.client.users.size,
+						users: this.client.guilds.reduce((acc, guild) => acc + guild.memberCount, 0),
 						uptime: this.client.uptime,
 						voice: this.client.voiceConnections.size,
 						largeGuilds: this.client.guilds.filter(g => g.large).length,
