@@ -866,7 +866,7 @@ export class Admiral extends EventEmitter {
 							if (Object.keys(evals.value).length === this.clusters.size) {
 								const worker = master.workers[evals.destWorkerID];
 								if (worker) {
-									worker.send({ op: "broadcastEvalReturn", UUID, value: evals.value });
+									worker.send({ op: "broadcastEvalReturn", UUID, value: Object.values(evals.value) });
 
 									this.evals.delete(UUID);
 								}

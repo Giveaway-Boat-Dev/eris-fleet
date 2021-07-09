@@ -195,7 +195,7 @@ export class Cluster {
 					break;
 				}
 				case "broadcastEvalReturn": {
-					ipc.emit(message.UUID, Object.values(message.value));
+					ipc.emit(message.UUID, message.value);
 
 					break;
 				}
