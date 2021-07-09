@@ -23,7 +23,7 @@ export class IPC extends EventEmitter {
 	 * @param code Code to eval in all clusters
 	 * @param workerID Worker ID
 	 */
-	public broadcastEval(code: string | ((cluster: Cluster) => any), workerID: number) {
+	public broadcastEval<T = string>(code: string | ((cluster: Cluster) => T), workerID: number): Promise<T extends string ? any[] : T[]> {
 		const UUID = nanoid(32);
 		code = typeof code === 'string' ? code : `(${code})(this)`;
 
