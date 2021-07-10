@@ -188,7 +188,7 @@ export class Cluster {
 				case "broadcastEval": {
 					const { UUID, code } = message;
 
-					const evaled = eval(code);
+					const evaled = await eval(code);
 
 					if (process.send) process.send({ op: "broadcastEvalReturn", UUID, value: evaled, clusterID: this.clusterID });
 
