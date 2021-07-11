@@ -857,16 +857,18 @@ export class Admiral extends EventEmitter {
 						break;
 					}
 					case "broadcastEvalReturn": {
-						const { UUID, value, clusterID } = message;
+						const { UUID, value, clusterID, success } = message;
 						const evals = this.evals.get(UUID);
 
 						if (evals !== undefined) {
 							evals.value[clusterID] = value;
 
-							if (Object.keys(evals.value).length === this.clusters.size) {
+							if (Object.keys(evals.value).length === this.clusters.size || !success) {
 								const worker = master.workers[evals.destWorkerID];
+								const valueToSend = success ? Object.values(evals.value) : value;
+
 								if (worker) {
-									worker.send({ op: "broadcastEvalReturn", UUID, value: Object.values(evals.value) });
+									worker.send({ op: "broadcastEvalReturn", UUID, value: valueToSend, success });
 
 									this.evals.delete(UUID);
 								}

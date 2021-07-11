@@ -33,7 +33,8 @@ export class IPC extends EventEmitter {
 			const callback = (r: any) => {
 				this.removeListener(UUID, callback);
 
-				resolve(r);
+				if (r.success === true) resolve(r.value);
+				else reject(r.value);
 			};
 
 			this.on(UUID, callback);

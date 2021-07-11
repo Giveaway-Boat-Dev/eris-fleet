@@ -188,14 +188,20 @@ export class Cluster {
 				case "broadcastEval": {
 					const { UUID, code } = message;
 
-					const evaled = await eval(code);
+					try {
+						const evaled = await eval(code);
 
-					if (process.send) process.send({ op: "broadcastEvalReturn", UUID, value: evaled, clusterID: this.clusterID });
+						if (process.send) process.send({ op: "broadcastEvalReturn", UUID, value: evaled, clusterID: this.clusterID, success: true });
+					} catch (err) {
+						if (process.send) process.send({ op: "broadcastEvalReturn", UUID, value: err, clusterID: this.clusterID, success: false });
+					}
 
 					break;
 				}
 				case "broadcastEvalReturn": {
-					ipc.emit(message.UUID, message.value);
+					const { UUID, value, success } = message;
+
+					ipc.emit(UUID, { value, success });
 
 					break;
 				}
