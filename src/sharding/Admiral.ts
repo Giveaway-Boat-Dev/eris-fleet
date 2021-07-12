@@ -830,7 +830,9 @@ export class Admiral extends EventEmitter {
 					case "apiRequest": {
 						const { UUID, workerID, data } = message;
 						const { method, url, auth, body, file, _route, short } = data;
-						
+
+						if (file) file.file = Buffer.from(file.file);
+
 						const worker = master.workers[workerID];
 
 						const send = (data: { response: any, success: boolean }) => {
