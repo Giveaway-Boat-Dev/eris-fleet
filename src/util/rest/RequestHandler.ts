@@ -199,7 +199,7 @@ export class RequestHandler {
                         this.latencyRef.latency = this.latencyRef.latency - ~~(this.latencyRef?.raw?.shift()! / 10) + ~~(latency / 10);
                     }
 
-                    if (process.send) process.send("rawREST", { method, url, auth, body, file, route, short, resp, latency });
+                    if (process.send) process.send("rawREST", { method, url, auth, body, file, route, short, resp: { statusCode: resp.statusCode }, latency });
 
                     const headerNow = Date.parse(resp.headers["date"]);
                     if (this.latencyRef.lastTimeOffsetCheck < Date.now() - 5000) {
