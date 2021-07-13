@@ -101,8 +101,7 @@ export class RequestHandler {
                                     unencodedReason = decodeURIComponent(unencodedReason);
                                 }
                             } catch (err) {
-                                // @ts-expect-error
-                                process.emit("message", { op: "apiError", err });
+                                process.emit("message", { op: "apiError", err }, undefined);
                             }
                         }
                         headers["X-Audit-Log-Reason"] = encodeURIComponent(unencodedReason);
@@ -200,15 +199,13 @@ export class RequestHandler {
                         this.latencyRef.latency = this.latencyRef.latency - ~~(this.latencyRef?.raw?.shift()! / 10) + ~~(latency / 10);
                     }
 
-                    // @ts-expect-error
-                    process.emit("message", { op: "rawREST", workerID, method, url, auth, body, file, route, short, resp: { statusCode: resp.statusCode }, latency });
+                    process.emit("message", { op: "rawREST", workerID, method, url, auth, body, file, route, short, resp: { statusCode: resp.statusCode }, latency }, undefined);
 
                     const headerNow = Date.parse(resp.headers["date"]);
                     if (this.latencyRef.lastTimeOffsetCheck < Date.now() - 5000) {
                         const timeOffset = headerNow + 500 - (this.latencyRef.lastTimeOffsetCheck = Date.now());
                         if (this.latencyRef.timeOffset - this.latencyRef.latency >= this.options.latencyThreshold! && timeOffset - this.latencyRef.latency >= this.options.latencyThreshold!) {
-                            // @ts-expect-error
-                            process.emit("message", { op: "apiWarn", message: new Error(`Your clock is ${this.latencyRef.timeOffset}ms behind Discord's server clock. Please check your connection and system time.`) });
+                            process.emit("message", { op: "apiWarn", message: new Error(`Your clock is ${this.latencyRef.timeOffset}ms behind Discord's server clock. Please check your connection and system time.`) }, undefined);
                         }
                         this.latencyRef.timeOffset = this.latencyRef.timeOffset - ~~(this.latencyRef?.timeOffsets?.shift()! / 10) + ~~(timeOffset / 10);
                         this.latencyRef.timeOffsets.push(timeOffset);
@@ -245,14 +242,13 @@ export class RequestHandler {
                         }
 
                         if (method !== "GET" && (resp.headers["x-ratelimit-remaining"] == undefined || resp.headers["x-ratelimit-limit"] == undefined) && this.ratelimits[route].limit !== 1) {
-                            // @ts-expect-error
                             process.emit("message", { op: "apiDebug", message: `Missing ratelimit headers for SequentialBucket(${this.ratelimits[route].remaining}/${this.ratelimits[route].limit}) with non-default limit\n`
                                 + `${resp.statusCode} ${resp.headers["content-type"]}: ${method} ${route} | ${resp.headers["cf-ray"]}\n`
                                 + "content-type = " + +"\n"
                                 + "x-ratelimit-remaining = " + resp.headers["x-ratelimit-remaining"] + "\n"
                                 + "x-ratelimit-limit = " + resp.headers["x-ratelimit-limit"] + "\n"
                                 + "x-ratelimit-reset = " + resp.headers["x-ratelimit-reset"] + "\n"
-                                + "x-ratelimit-global = " + resp.headers["x-ratelimit-global"] });
+                                + "x-ratelimit-global = " + resp.headers["x-ratelimit-global"] }, undefined);
                         }
 
                         this.ratelimits[route].remaining = resp.headers["x-ratelimit-remaining"] === undefined ? 1 : +resp.headers["x-ratelimit-remaining"] || 0;
@@ -263,8 +259,7 @@ export class RequestHandler {
                         if (retryAfter && (typeof resp.headers["via"] !== "string" || !resp.headers["via"].includes("1.1 google"))) {
                             retryAfter *= 1000;
                             if (retryAfter >= 1000 * 1000) {
-                                // @ts-expect-error
-                                process.emit("message", { op: "apiWarn", message: `Excessive Retry-After interval detected (Retry-After: ${resp.headers["retry-after"]} * 1000, Via: ${resp.headers["via"]})` });
+                                process.emit("message", { op: "apiWarn", message: `Excessive Retry-After interval detected (Retry-After: ${resp.headers["retry-after"]} * 1000, Via: ${resp.headers["via"]})` }, undefined);
                             }
                         }
                         if (retryAfter >= 0) {
@@ -286,15 +281,13 @@ export class RequestHandler {
 
                         if (resp.statusCode !== 429) {
                             const content = typeof body === "object" ? `${body.content} ` : "";
-                            // @ts-expect-error
-                            process.emit("message", { op: "apiDebug", message: `${content}${now} ${route} ${resp.statusCode}: ${latency}ms (${this.latencyRef.latency}ms avg) | ${this.ratelimits[route].remaining}/${this.ratelimits[route].limit} left | Reset ${this.ratelimits[route].reset} (${this.ratelimits[route].reset - now}ms left)` });
+                            process.emit("message", { op: "apiDebug", message: `${content}${now} ${route} ${resp.statusCode}: ${latency}ms (${this.latencyRef.latency}ms avg) | ${this.ratelimits[route].remaining}/${this.ratelimits[route].limit} left | Reset ${this.ratelimits[route].reset} (${this.ratelimits[route].reset - now}ms left)` }, undefined);
                         }
 
                         if (resp.statusCode! >= 300) {
                             if (resp.statusCode === 429) {
                                 const content = typeof body === "object" ? `${body.content} ` : "";
-                                // @ts-expect-error
-                                process.emit("message", { op: "apiDebug", message: `${resp.headers["x-ratelimit-global"] ? "Global" : "Unexpected"} 429 (╯°□°）╯︵ ┻━┻: ${response}\n${content} ${now} ${route} ${resp.statusCode}: ${latency}ms (${this.latencyRef.latency}ms avg) | ${this.ratelimits[route].remaining}/${this.ratelimits[route].limit} left | Reset ${this.ratelimits[route].reset} (${this.ratelimits[route].reset - now}ms left)` });
+                                process.emit("message", { op: "apiDebug", message: `${resp.headers["x-ratelimit-global"] ? "Global" : "Unexpected"} 429 (╯°□°）╯︵ ┻━┻: ${response}\n${content} ${now} ${route} ${resp.statusCode}: ${latency}ms (${this.latencyRef.latency}ms avg) | ${this.ratelimits[route].remaining}/${this.ratelimits[route].limit} left | Reset ${this.ratelimits[route].reset} (${this.ratelimits[route].reset - now}ms left)` }, undefined);
                                 if (retryAfter) {
                                     setTimeout(() => {
                                         cb();
@@ -307,8 +300,7 @@ export class RequestHandler {
                                     return;
                                 }
                             } else if (resp.statusCode === 502 && ++attempts < 4) {
-                                // @ts-expect-error
-                                process.emit("message", { op: "apiDebug", message: "A wild 502 appeared! Thanks CloudFlare!" });
+                                process.emit("message", { op: "apiDebug", message: "A wild 502 appeared! Thanks CloudFlare!" }, undefined);
                                 setTimeout(() => {
                                     this.request(method, url, auth, body, file, route, true, workerID).then(resolve).catch(reject);
                                 }, Math.floor(Math.random() * 1900 + 100));
