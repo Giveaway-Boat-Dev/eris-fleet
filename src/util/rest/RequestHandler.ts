@@ -50,6 +50,14 @@ export class RequestHandler {
         this.emit = () => null;
         this.token = options.token;
 
+        setInterval(() => {
+            const ratelimits = Object.entries(this.ratelimits);
+
+            for (const [route, bucket] of ratelimits) {
+                if (Date.now() > bucket.reset) delete this.ratelimits[route];
+            }
+        }, 300000);
+
     }
 
     globalUnblock() {
