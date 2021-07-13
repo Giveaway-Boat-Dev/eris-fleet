@@ -70,7 +70,7 @@ export class RequestHandler {
     * @arg {String} file.name What to name the file
     * @returns {Promise<Object>} Resolves with the returned JSON data
     */
-    request(method: string, url: string, auth: boolean, body: any, file: any, _route: string, short: boolean) {
+    request(method: string, url: string, auth: boolean, body: any, file: any, _route: string, short: boolean, workerID: number) {
         const route = _route || this.routefy(url, method);
 
         const _stackHolder = {}; // Preserve async stack
@@ -101,7 +101,8 @@ export class RequestHandler {
                                     unencodedReason = decodeURIComponent(unencodedReason);
                                 }
                             } catch (err) {
-                                if (process.send) process.send("apiError", err);
+                                // @ts-expect-error
+                                process.emit("message", { op: "apiError", err });
                             }
                         }
                         headers["X-Audit-Log-Reason"] = encodeURIComponent(unencodedReason);
@@ -199,13 +200,15 @@ export class RequestHandler {
                         this.latencyRef.latency = this.latencyRef.latency - ~~(this.latencyRef?.raw?.shift()! / 10) + ~~(latency / 10);
                     }
 
-                    if (process.send) process.send("rawREST", { method, url, auth, body, file, route, short, resp: { statusCode: resp.statusCode }, latency });
+                    // @ts-expect-error
+                    process.emit("message", { op: "rawREST", workerID, method, url, auth, body, file, route, short, resp: { statusCode: resp.statusCode }, latency });
 
                     const headerNow = Date.parse(resp.headers["date"]);
                     if (this.latencyRef.lastTimeOffsetCheck < Date.now() - 5000) {
                         const timeOffset = headerNow + 500 - (this.latencyRef.lastTimeOffsetCheck = Date.now());
                         if (this.latencyRef.timeOffset - this.latencyRef.latency >= this.options.latencyThreshold! && timeOffset - this.latencyRef.latency >= this.options.latencyThreshold!) {
-                            if (process.send) process.send("apiWarn", new Error(`Your clock is ${this.latencyRef.timeOffset}ms behind Discord's server clock. Please check your connection and system time.`));
+                            // @ts-expect-error
+                            process.emit("message", { op: "apiWarn", message: new Error(`Your clock is ${this.latencyRef.timeOffset}ms behind Discord's server clock. Please check your connection and system time.`) });
                         }
                         this.latencyRef.timeOffset = this.latencyRef.timeOffset - ~~(this.latencyRef?.timeOffsets?.shift()! / 10) + ~~(timeOffset / 10);
                         this.latencyRef.timeOffsets.push(timeOffset);
@@ -242,13 +245,14 @@ export class RequestHandler {
                         }
 
                         if (method !== "GET" && (resp.headers["x-ratelimit-remaining"] == undefined || resp.headers["x-ratelimit-limit"] == undefined) && this.ratelimits[route].limit !== 1) {
-                            if (process.send) process.send("apiDebug", `Missing ratelimit headers for SequentialBucket(${this.ratelimits[route].remaining}/${this.ratelimits[route].limit}) with non-default limit\n`
+                            // @ts-expect-error
+                            process.emit("message", { op: "apiDebug", message: `Missing ratelimit headers for SequentialBucket(${this.ratelimits[route].remaining}/${this.ratelimits[route].limit}) with non-default limit\n`
                                 + `${resp.statusCode} ${resp.headers["content-type"]}: ${method} ${route} | ${resp.headers["cf-ray"]}\n`
                                 + "content-type = " + +"\n"
                                 + "x-ratelimit-remaining = " + resp.headers["x-ratelimit-remaining"] + "\n"
                                 + "x-ratelimit-limit = " + resp.headers["x-ratelimit-limit"] + "\n"
                                 + "x-ratelimit-reset = " + resp.headers["x-ratelimit-reset"] + "\n"
-                                + "x-ratelimit-global = " + resp.headers["x-ratelimit-global"]);
+                                + "x-ratelimit-global = " + resp.headers["x-ratelimit-global"] });
                         }
 
                         this.ratelimits[route].remaining = resp.headers["x-ratelimit-remaining"] === undefined ? 1 : +resp.headers["x-ratelimit-remaining"] || 0;
@@ -259,7 +263,8 @@ export class RequestHandler {
                         if (retryAfter && (typeof resp.headers["via"] !== "string" || !resp.headers["via"].includes("1.1 google"))) {
                             retryAfter *= 1000;
                             if (retryAfter >= 1000 * 1000) {
-                                if (process.send) process.send("apiWarn", `Excessive Retry-After interval detected (Retry-After: ${resp.headers["retry-after"]} * 1000, Via: ${resp.headers["via"]})`);
+                                // @ts-expect-error
+                                process.emit("message", { op: "apiWarn", message: `Excessive Retry-After interval detected (Retry-After: ${resp.headers["retry-after"]} * 1000, Via: ${resp.headers["via"]})` });
                             }
                         }
                         if (retryAfter >= 0) {
@@ -281,28 +286,31 @@ export class RequestHandler {
 
                         if (resp.statusCode !== 429) {
                             const content = typeof body === "object" ? `${body.content} ` : "";
-                            if (process.send) process.send("apiDebug", `${content}${now} ${route} ${resp.statusCode}: ${latency}ms (${this.latencyRef.latency}ms avg) | ${this.ratelimits[route].remaining}/${this.ratelimits[route].limit} left | Reset ${this.ratelimits[route].reset} (${this.ratelimits[route].reset - now}ms left)`);
+                            // @ts-expect-error
+                            process.emit("message", { op: "apiDebug", message: `${content}${now} ${route} ${resp.statusCode}: ${latency}ms (${this.latencyRef.latency}ms avg) | ${this.ratelimits[route].remaining}/${this.ratelimits[route].limit} left | Reset ${this.ratelimits[route].reset} (${this.ratelimits[route].reset - now}ms left)` });
                         }
 
                         if (resp.statusCode! >= 300) {
                             if (resp.statusCode === 429) {
                                 const content = typeof body === "object" ? `${body.content} ` : "";
-                                if (process.send) process.send("apiDebug", `${resp.headers["x-ratelimit-global"] ? "Global" : "Unexpected"} 429 (╯°□°）╯︵ ┻━┻: ${response}\n${content} ${now} ${route} ${resp.statusCode}: ${latency}ms (${this.latencyRef.latency}ms avg) | ${this.ratelimits[route].remaining}/${this.ratelimits[route].limit} left | Reset ${this.ratelimits[route].reset} (${this.ratelimits[route].reset - now}ms left)`);
+                                // @ts-expect-error
+                                process.emit("message", { op: "apiDebug", message: `${resp.headers["x-ratelimit-global"] ? "Global" : "Unexpected"} 429 (╯°□°）╯︵ ┻━┻: ${response}\n${content} ${now} ${route} ${resp.statusCode}: ${latency}ms (${this.latencyRef.latency}ms avg) | ${this.ratelimits[route].remaining}/${this.ratelimits[route].limit} left | Reset ${this.ratelimits[route].reset} (${this.ratelimits[route].reset - now}ms left)` });
                                 if (retryAfter) {
                                     setTimeout(() => {
                                         cb();
-                                        this.request(method, url, auth, body, file, route, true).then(resolve).catch(reject);
+                                        this.request(method, url, auth, body, file, route, true, workerID).then(resolve).catch(reject);
                                     }, retryAfter);
                                     return;
                                 } else {
                                     cb();
-                                    this.request(method, url, auth, body, file, route, true).then(resolve).catch(reject);
+                                    this.request(method, url, auth, body, file, route, true, workerID).then(resolve).catch(reject);
                                     return;
                                 }
                             } else if (resp.statusCode === 502 && ++attempts < 4) {
-                                if (process.send) process.send("apiDebug", "A wild 502 appeared! Thanks CloudFlare!");
+                                // @ts-expect-error
+                                process.emit("message", { op: "apiDebug", message: "A wild 502 appeared! Thanks CloudFlare!" });
                                 setTimeout(() => {
-                                    this.request(method, url, auth, body, file, route, true).then(resolve).catch(reject);
+                                    this.request(method, url, auth, body, file, route, true, workerID).then(resolve).catch(reject);
                                 }, Math.floor(Math.random() * 1900 + 100));
                                 return cb();
                             }

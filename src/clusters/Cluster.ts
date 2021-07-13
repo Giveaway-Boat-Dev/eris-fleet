@@ -205,6 +205,25 @@ export class Cluster {
 
 					break;
 				}
+				case "rawREST": {
+					delete message.op;
+					delete message.workerID;
+
+					this.client.emit("rawREST", message);
+
+					break;
+				}
+				case "apiDebug":
+				case "apiError":
+				case "apiWarn": {
+					const event = message.op.slice(3).toLowerCase();
+					const messageToSend = message.message || message.err;
+
+					this.client.emit(event, messageToSend);
+
+					break;
+				}
+
 				}
 			}
 		});

@@ -322,6 +322,22 @@ export class Admiral extends EventEmitter {
 
 		this.launch();
 
+		process.on("message", (message) => {
+			if (message.op) {
+				switch (message.op) {
+					case "rawREST":
+					case "apiDebug":
+					case "apiError":
+					case "apiWarn": {
+						const worker = master.workers[message.workerID];
+						if (worker) worker.send(message);
+
+						break;
+					}
+				}
+			}
+		});
+
 		if (master.isMaster) {
 			on("message", (worker, message) => {
 				if (message.op) {
@@ -839,7 +855,7 @@ export class Admiral extends EventEmitter {
 							if (worker) worker.send({ op: "apiResponse", UUID, data })
 						}
 
-						this.requestHandler.request(method, url, auth, body, file, _route, short)
+						this.requestHandler.request(method, url, auth, body, file, _route, short, workerID)
 							.then(response => send({ response, success: true }))
 							.catch(response => send({ response, success: false }))
 
