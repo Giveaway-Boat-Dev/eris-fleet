@@ -242,7 +242,7 @@ export class Cluster {
 
 		const botFile = (await import(this.path));
 
-		let bot;
+		let bot: Eris.Client;
 		if (botFile.App.Eris) {
 			bot = new botFile.App.Eris.Client(this.token, { ...options, clusterID: this.clusterID, workerID: worker.id, ipc, totalShardCount: this.totalShardCount });
 			botFile.App = botFile.App.BotWorker;
@@ -270,8 +270,8 @@ export class Cluster {
 			}
 		};
 
-		bot.on("connect", (id: number) => {
-			if (this.whatToLog.includes("shard_connect")) {
+		bot.on("shardPreReady", (id: number) => {
+			if (this.whatToLog.includes("shard_pre_ready")) {
                 console.log('--------------------------------------------------------');
                 console.log(`[Shards]\tLaunched Shard ${id}`);
 			}

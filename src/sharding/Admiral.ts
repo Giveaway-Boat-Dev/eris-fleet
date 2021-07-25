@@ -247,7 +247,7 @@ export class Admiral extends EventEmitter {
 			"service_start",
 			"service_ready",
 			"cluster_ready",
-			"shard_connect",
+			"shard_pre_ready",
 			"shard_ready",
 			"shard_disconnect",
 			"shard_resume",
