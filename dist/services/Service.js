@@ -35,11 +35,11 @@ class Service {
         // Spawns
         process.on("uncaughtException", (err) => {
             if (process.send)
-                process.send({ op: "error", msg: util_1.inspect(err) });
+                process.send({ op: "error", msg: (0, util_1.inspect)(err) });
         });
         process.on("unhandledRejection", (reason, promise) => {
             if (process.send)
-                process.send({ op: "error", msg: "Unhandled Rejection at: " + util_1.inspect(promise) + " reason: " + reason });
+                process.send({ op: "error", msg: "Unhandled Rejection at: " + (0, util_1.inspect)(promise) + " reason: " + reason });
         });
         if (process.send)
             process.send({ op: "launched" });
@@ -140,7 +140,7 @@ class Service {
                     process.send({ op: "connected" });
                 ready = true;
             }).catch((err) => {
-                console.error(`Service ${this.serviceName} had an error starting: ${util_1.inspect(err)}`);
+                console.error(`Service ${this.serviceName} had an error starting: ${(0, util_1.inspect)(err)}`);
                 process.kill(0);
             });
         // Timeout

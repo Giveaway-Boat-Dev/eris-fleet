@@ -35,10 +35,10 @@ class Cluster {
             process.send({ op: "warn", msg: str, source: "Cluster " + this.clusterID }); };
         //Spawns
         process.on("uncaughtException", (err) => {
-            console.error(util_1.inspect(err));
+            console.error((0, util_1.inspect)(err));
         });
         process.on("unhandledRejection", (reason, promise) => {
-            console.error("Unhandled Rejection at: " + util_1.inspect(promise) + " reason: " + reason);
+            console.error("Unhandled Rejection at: " + (0, util_1.inspect)(promise) + " reason: " + reason);
         });
         if (process.send)
             process.send({ op: "launched" });
@@ -238,7 +238,7 @@ class Cluster {
         bot.on("shardDisconnect", (err, id) => {
             if (!this.shutdown)
                 if (this.whatToLog.includes("shard_disconnect"))
-                    console.log(`Shard ${id} disconnected with error: ${util_1.inspect(err)}`);
+                    console.log(`Shard ${id} disconnected with error: ${(0, util_1.inspect)(err)}`);
         });
         bot.once("shardReady", () => {
             setStatus();
@@ -257,7 +257,7 @@ class Cluster {
         });
         bot.on("error", (error, id) => {
             if (process.send)
-                process.send({ op: "error", msg: util_1.inspect(error), source: `Cluster ${this.clusterID}, Shard ${id}` });
+                process.send({ op: "error", msg: (0, util_1.inspect)(error), source: `Cluster ${this.clusterID}, Shard ${id}` });
         });
         bot.on("ready", () => {
             if (this.whatToLog.includes("cluster_ready"))

@@ -155,11 +155,11 @@ class Admiral extends events_1.EventEmitter {
             };
         }
         if (this.clusterCount === "auto")
-            this.clusterCount = os_1.cpus().length;
+            this.clusterCount = (0, os_1.cpus)().length;
         this.eris = new Eris.Client(this.token);
         this.launch();
         if (master.isMaster) {
-            cluster_1.on("message", (worker, message) => {
+            (0, cluster_1.on)("message", (worker, message) => {
                 var _a, _b, _c;
                 if (message.op) {
                     switch (message.op) {
@@ -654,7 +654,7 @@ class Admiral extends events_1.EventEmitter {
                     }
                 }
             });
-            cluster_1.on("disconnect", (worker) => {
+            (0, cluster_1.on)("disconnect", (worker) => {
                 const cluster = this.clusters.find((c) => c.workerID == worker.id);
                 const service = this.services.find((s) => s.workerID == worker.id);
                 if (cluster) {
@@ -664,7 +664,7 @@ class Admiral extends events_1.EventEmitter {
                     this.warn(`Admiral | Service ${service.serviceName} disconnected :(`);
                 }
             });
-            cluster_1.on("exit", (worker, code, signal) => {
+            (0, cluster_1.on)("exit", (worker, code, signal) => {
                 var _a;
                 if (this.softKills.get(worker.id)) {
                     const name = () => {
